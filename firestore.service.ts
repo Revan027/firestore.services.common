@@ -17,7 +17,8 @@ export class FirestoreService {
     // on commence par ce connecter en anonyme
     const userCrdential = await signInAnonymously(this.auth);
 
-    /*onAuthStateChanged(this.auth, (user) => {
+    /*dd 
+    onAuthStateChanged(this.auth, (user) => {
       if (user) {
         console.log("user : ", user);
         // ...
