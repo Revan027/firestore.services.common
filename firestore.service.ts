@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth, signInAnonymously } from '@angular/fire/auth';
-import { collection } from "firebase/firestore";
+import { addDoc, collection, DocumentData, DocumentReference, setDoc } from "firebase/firestore";
 import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { FirebaseCollectionEnum } from '../../constants/firebaseCollectionEnum';
+import { LocationRequest } from 'src/app/models/Location';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,7 @@ export class FirestoreService {
   constructor(private firestore: Firestore, private auth: Auth) {
   }
 
- async signIn(){
+  async signIn(){
     // on commence par ce connecter en anonyme
     const userCrdential = await signInAnonymously(this.auth);
 
@@ -27,10 +28,18 @@ export class FirestoreService {
         signInAnonymously(this.auth)
       }
     });*/
- }
+  }
+
+  async createDocument(firebaseCollectionEnum: FirebaseCollectionEnum, object: object){
+    return addDoc(collection(this.firestore, firebaseCollectionEnum),  { ...object })
+  }
+
+  GetDocumentRef(firebaseCollectionEnum: FirebaseCollectionEnum, id: string): DocumentReference<DocumentData, DocumentData>{
+    return doc(this.firestore, firebaseCollectionEnum, id);
+  }
 
   async getDocument<T>(firebaseCollectionEnum: FirebaseCollectionEnum, id: string){
-    const ref = doc(this.firestore, firebaseCollectionEnum, id);
+    const ref = this.GetDocumentRef(firebaseCollectionEnum, id);
     const docSnap = await getDoc(ref);
 
     return docSnap.data() as T;
