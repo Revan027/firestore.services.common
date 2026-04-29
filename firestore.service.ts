@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Query } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth, signInAnonymously } from '@angular/fire/auth';
-import { addDoc, collection, deleteDoc, DocumentData, DocumentReference, orderBy, query, QuerySnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, CollectionReference, deleteDoc, DocumentData, DocumentReference, orderBy, query, QuerySnapshot, setDoc, updateDoc, where } from "firebase/firestore";
 import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { FirebaseCollectionEnum } from '../../constants/firebaseCollectionEnum';
 
@@ -41,6 +41,10 @@ export class FirestoreService {
     return deleteDoc(documentReference);
   }
 
+  getCollectionRef(firebaseCollectionEnum: FirebaseCollectionEnum): CollectionReference<DocumentData, DocumentData>{
+    return collection(this.firestore, firebaseCollectionEnum);
+  }
+
   getDocumentRef(firebaseCollectionEnum: FirebaseCollectionEnum, id: string): DocumentReference<DocumentData, DocumentData>{
     return doc(this.firestore, firebaseCollectionEnum, id);
   }
@@ -64,6 +68,14 @@ export class FirestoreService {
       docsSnap = await getDocs(ref);
     }
     
+    return docsSnap.docs.map((item)=> {
+      return Object.assign({id: item.id }, item.data()) as T;
+    }) as T;
+  }
+
+  async search<T>(query: any){
+    const docsSnap = await getDocs(query);
+
     return docsSnap.docs.map((item)=> {
       return Object.assign({id: item.id }, item.data()) as T;
     }) as T;
