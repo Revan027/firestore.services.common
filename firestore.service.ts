@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth, signInAnonymously } from '@angular/fire/auth';
-import { addDoc, collection, DocumentData, DocumentReference, setDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, DocumentData, DocumentReference, orderBy, query, QuerySnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { FirebaseCollectionEnum } from '../../constants/firebaseCollectionEnum';
-import { LocationRequest } from 'src/app/models/Location';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +17,7 @@ export class FirestoreService {
     // on commence par ce connecter en anonyme
     const userCrdential = await signInAnonymously(this.auth);
 
-    /*dd 
+    /* 
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         console.log("user : ", user);
@@ -31,23 +30,40 @@ export class FirestoreService {
   }
 
   async createDocument(firebaseCollectionEnum: FirebaseCollectionEnum, object: object){
-    return addDoc(collection(this.firestore, firebaseCollectionEnum),  { ...object })
+    return addDoc(collection(this.firestore, firebaseCollectionEnum),  { ...object }) // ... cast en array
   }
 
-  GetDocumentRef(firebaseCollectionEnum: FirebaseCollectionEnum, id: string): DocumentReference<DocumentData, DocumentData>{
+  async updateDocument(documentReference: DocumentReference, object: object){
+    return await updateDoc(documentReference, object);
+  }
+
+  async deleteDocument(documentReference: DocumentReference){
+    return deleteDoc(documentReference);
+  }
+
+  getDocumentRef(firebaseCollectionEnum: FirebaseCollectionEnum, id: string): DocumentReference<DocumentData, DocumentData>{
     return doc(this.firestore, firebaseCollectionEnum, id);
   }
 
   async getDocument<T>(firebaseCollectionEnum: FirebaseCollectionEnum, id: string){
-    const ref = this.GetDocumentRef(firebaseCollectionEnum, id);
+    const ref = this.getDocumentRef(firebaseCollectionEnum, id);
     const docSnap = await getDoc(ref);
 
     return docSnap.data() as T;
   }
 
-  async getDocuments<T>(firebaseCollectionEnum: FirebaseCollectionEnum){
-    const docsSnap = await getDocs(collection(this.firestore, firebaseCollectionEnum));
+  async getDocuments<T>(firebaseCollectionEnum: FirebaseCollectionEnum, orderByAsc: string | null = null){
+    const ref = collection(this.firestore, firebaseCollectionEnum);
+    let docsSnap: QuerySnapshot<DocumentData, DocumentData>;
 
+    if (orderByAsc != null){
+      const q = query(ref, orderBy("latitude"));
+      docsSnap = await getDocs(q);
+    }
+    else{
+      docsSnap = await getDocs(ref);
+    }
+    
     return docsSnap.docs.map((item)=> {
       return Object.assign({id: item.id }, item.data()) as T;
     }) as T;
