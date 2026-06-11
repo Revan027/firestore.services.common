@@ -1,33 +1,15 @@
-import { Injectable, Query } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Firestore } from '@angular/fire/firestore';
-import { Auth, signInAnonymously } from '@angular/fire/auth';
-import { addDoc, collection, CollectionReference, deleteDoc, DocumentData, DocumentReference, orderBy, query, QuerySnapshot, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, CollectionReference, deleteDoc, DocumentData, DocumentReference, orderBy, query, QuerySnapshot, updateDoc } from "firebase/firestore";
 import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { FirebaseCollectionEnum } from '../../constants/firebaseCollectionEnum';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirestoreService {
-
-  constructor(private firestore: Firestore, private auth: Auth) {
-  }
-
-  async signIn(){
-    // on commence par ce connecter en anonyme
-    const userCrdential = await signInAnonymously(this.auth);
-
-    /* 
-    onAuthStateChanged(this.auth, (user) => {
-      if (user) {
-        console.log("user : ", user);
-        // ...
-      } 
-      else {
-        signInAnonymously(this.auth)
-      }
-    });*/
-  }
+  constructor(private firestore: Firestore) {}
 
   async createDocument(firebaseCollectionEnum: FirebaseCollectionEnum, object: object){
     return addDoc(collection(this.firestore, firebaseCollectionEnum),  { ...object }) // ... cast en array
@@ -61,7 +43,7 @@ export class FirestoreService {
     let docsSnap: QuerySnapshot<DocumentData, DocumentData>;
 
     if (orderByAsc != null){
-      const q = query(ref, orderBy("latitude"));
+      const q = query(ref, orderBy("latitude"));//todo a rendre paramétrable
       docsSnap = await getDocs(q);
     }
     else{
