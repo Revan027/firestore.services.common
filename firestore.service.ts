@@ -35,7 +35,7 @@ export class FirestoreService {
     const ref = this.getDocumentRef(firebaseCollectionEnum, id);
     const docSnap = await getDoc(ref);
 
-    return docSnap.data() as T;
+    return Object.assign({id: docSnap.id }, docSnap.data()) as T;
   }
 
   async getDocuments<T>(firebaseCollectionEnum: FirebaseCollectionEnum, orderByAsc: string | null = null){
